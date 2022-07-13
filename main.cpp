@@ -267,13 +267,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//	{{+0.4f, +0.7f, 0.0f}, {1.0f, 0.0f}}, // 右上
 	//};
 
-	//頂点データ
+	////頂点データ
+	//Vertex vertices[] = {
+	//	// x      y     z       u     v
+	//	{{  0.0f, 100.0f,  0.0f}, {0.0f, 1.0f}}, // 左下
+	//	{{	0.0f,   0.0f,  0.0f}, {0.0f, 0.0f}}, // 左上
+	//	{{100.0f, 100.0f, 0.0f}, {1.0f, 1.0f}}, // 右下
+	//	{{100.0f,  0.0f,  0.0f}, {1.0f, 0.0f}}, // 右上
+	//};
+
+	//	頂点データ
 	Vertex vertices[] = {
-		// x      y     z       u     v
-		{{  0.0f, 100.0f,  0.0f}, {0.0f, 1.0f}}, // 左下
-		{{	0.0f,   0.0f,  0.0f}, {0.0f, 0.0f}}, // 左上
-		{{100.0f, 100.0f, 0.0f}, {1.0f, 1.0f}}, // 右下
-		{{100.0f,  0.0f,  0.0f}, {1.0f, 0.0f}}, // 右上
+		//
+		{{ -50.0f, -50.0f,	50.0f},{0.0f, 1.0f}},// 左下
+		{{ -50.0f,  50.0f,	50.0f},{0.0f, 0.0f}},//	左上
+		{{  50.0f, -50.0f,	50.0f},{1.0f, 1.0f}},//	右下
+		{{  50.0f,  50.0f,	50.0f},{1.0f, 0.0f}} //	右上
 	};
 
 	//頂点データ全体のサイズ = 頂点データの一つ分のサイズ * 頂点データの要素数
@@ -592,9 +601,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		constMapTransform->mat.r[1].m128_f32[1] = -2.0f / window_height;
 		constMapTransform->mat.r[3].m128_f32[0] = -1.0f;
 		constMapTransform->mat.r[3].m128_f32[1] = 1.0f;
+
+		constMapTransform->mat = XMMatrixOrthographicOffCenterLH(
+			2.0f / window_width, -2.0f / window_height,
+			-1.0f, 1.0f,
+			0.0f, 1.0f
+		);
+
+	//	透視投影行列の計算
+	constMapTransform->mat = XMMatrixPerspectiveFovLH(
+		XMConvertToRadians(45.0f),
+		(float)window_width / window_height,
+		0.1, 1000.0f
+	);
+
 	}
-	
-	
 
 	// 値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1, 0, 0, 0.5f);
