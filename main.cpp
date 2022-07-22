@@ -1,3 +1,5 @@
+#define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
+
 #include <DirectXMath.h>
 #include <Windows.h>
 #include <cassert>
@@ -8,15 +10,13 @@
 #include <vector>
 #include <dinput.h>
 
+using namespace DirectX;
+
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
-
-#define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
-
-using namespace DirectX;
 
 //ウィンドウプロシージャ
 LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -236,6 +236,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 
+	float j = 0.0;
+
+	int blend = 0;
+	//	色（RGB）
+	float red = 1.0;
+	float green = 1.0;
+	float blue = 0.0;
+	float alpha = 1.0;
+	//	色の変化量
+	float colorChangeValue = 0.005f;
+	//	変化フラグ
+	float changePhase = 0;
+
 	// DirectX初期化処理　ここまで
 
 	//描画初期化処理　ここから
@@ -248,7 +261,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	  {+0.5f, -0.5f, 0.0f}, //右下
 
-	  {+0.5f, +0.5f, 0.0f}, //右上
+	  //{+0.5f, +0.5f, 0.0f}, //右上
 	};
 
 
@@ -484,7 +497,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(result));
 
 	// 値を書き込むと自動的に転送される
-	constMapMaterial->color = XMFLOAT4(1, 0, 0, 0.5f);
+	//constMapMaterial->color = XMFLOAT4(1, 0, 0, 0.5f);
 
 	// インデックスデータ
 	uint16_t indices[] =
@@ -531,6 +544,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ibView.BufferLocation = indexBuff->GetGPUVirtualAddress();
 	ibView.Format = DXGI_FORMAT_R16_UINT;
 	ibView.SizeInBytes = sizeIB;
+
 
 	//描画初期化処理　ここまで
 
@@ -634,6 +648,61 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			clearColor[2] = { 0.5f };
 			clearColor[3] = { 0.0f };
 		}
+
+		//	アルファブレンディング
+		if (key[DIK_1])
+		{
+			alpha = 0.3;
+		}
+
+		if (key[DIK_2])
+		{
+			alpha = 1.0;
+		}
+
+		//	色が変化する処理
+		//	緑から青
+		if (changePhase == 0)
+		{
+			green -= colorChangeValue;
+			blue += colorChangeValue;
+			if (green <= 0)
+			{
+				green = 0;
+				blue = 1;
+				changePhase = 1;
+			}
+		}
+
+		//	青から赤
+		else if (changePhase == 1)
+		{
+			blue -= colorChangeValue;
+			red += colorChangeValue;
+			if (blue <= 0)
+			{
+				blue = 0;
+				red = 1;
+				changePhase = 2;
+			}
+		}
+
+		//	赤から緑
+		else if (changePhase == 2)
+		{
+			green += colorChangeValue;
+			red -= colorChangeValue;
+			if (red <= 0)
+			{
+				red = 0;
+				green = 1;
+				changePhase = 0;
+			}
+		}
+
+
+		constMapMaterial->color = XMFLOAT4(red, green, blue, alpha);
+
 
 		// 4 描画コマンドここまで
 
